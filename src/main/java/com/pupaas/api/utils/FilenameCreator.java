@@ -1,10 +1,12 @@
 package com.pupaas.api.utils;
 
+import org.springframework.stereotype.Component;
+
+@Component
 public class FilenameCreator {
-    private static String filename = "imagenespupusas";
 
-    public static String createFilename(int masa, int ingrediente) {
-
+    public String createFilename(int masa, int ingrediente) {
+        String filename = "imagenespupusas";
 
         switch (masa){
             case 1:
@@ -25,7 +27,6 @@ public class FilenameCreator {
             case 3:
                 filename += "/queso/";
         }
-
         return filename;
 
     }
