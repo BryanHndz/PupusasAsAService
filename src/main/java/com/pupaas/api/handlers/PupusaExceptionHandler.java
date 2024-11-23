@@ -1,5 +1,6 @@
-package com.pupaas.api.controllers;
+package com.pupaas.api.handlers;
 
+import com.pupaas.api.exceptions.WrongFileUploadingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -16,6 +17,13 @@ public class PupusaExceptionHandler {
                 "MASA: [Arroz = 1], [Maíz = 2] \n" +
                 "INGREDIENTES: [1 = Frijol-queso], [2 = Revueltas], [3 = Queso]";
 
+        return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(WrongFileUploadingException.class)
+    public ResponseEntity<String> WrongFileUploadingException(Exception ex) {
+        String message = "Usted esta intentando subir un tipo de archivo incorrecto: " + ex.getMessage() +
+                "\n\nTipos de archivos permitidos: JPG, JPEG, PNG y GIF";
         return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
     }
 }

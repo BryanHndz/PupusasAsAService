@@ -2,6 +2,7 @@ package com.pupaas.api.services.impl;
 
 import com.pupaas.api.domain.dtos.UploadPupusaDTO;
 import com.pupaas.api.domain.dtos.UploadPupusaDTOResponse;
+import com.pupaas.api.exceptions.WrongFileUploadingException;
 import com.pupaas.api.services.IS3Service;
 import com.pupaas.api.utils.FilenameCreator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,9 +31,17 @@ public class IS3ServiceImpl implements IS3Service {
     public UploadPupusaDTOResponse uploadFile(UploadPupusaDTO dtoPupusa, MultipartFile image) throws IOException {
 
         String fileKey = filenameCreator.createFilename(dtoPupusa.getMasa(), dtoPupusa.getIngredientes());
+        String filename = image.getOriginalFilename();
+
+        if (!filename.endsWith(".jpg") &&
+                !filename.endsWith(".png")  &&
+                !filename.endsWith(".gif") &&
+                !filename.endsWith(".jpeg")) {
+            throw new WrongFileUploadingException(filename);
+        }
 
         try{
-            String filename = image.getOriginalFilename();
+
             String filePath = fileKey + filename;
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucketName)
