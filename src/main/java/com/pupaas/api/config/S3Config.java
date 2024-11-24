@@ -24,4 +24,6 @@ public class S3Config {
                 .credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
                 .build();
     }
+
+
 }

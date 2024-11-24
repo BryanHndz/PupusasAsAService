@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 @AllArgsConstructor
 public class UploadPupusaDTOResponse {
     private String message;
-    private String filePath;
+    private String fileUrl;
     private String identificador;
 
 
