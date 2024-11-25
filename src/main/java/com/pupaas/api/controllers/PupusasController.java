@@ -1,5 +1,6 @@
 package com.pupaas.api.controllers;
 
+import com.pupaas.api.domain.dtos.ManyPupusasObjectDTO;
 import com.pupaas.api.domain.dtos.UploadPupusaDTO;
 import com.pupaas.api.domain.dtos.UploadPupusaDTOResponse;
 import com.pupaas.api.services.impl.IS3ServiceImpl;
@@ -62,8 +63,8 @@ public class PupusasController {
     }
 
     @GetMapping("/pupusa/many")
-    public ResponseEntity<List<byte[]>> getManyPupusasImage(@RequestParam("cantidad") int cantidad) throws IOException, IllegalArgumentException {
-        List<byte[]> myListOfObjects;
+    public ResponseEntity<List<ManyPupusasObjectDTO>> getManyPupusasImage(@RequestParam("cantidad") int cantidad) throws IOException, IllegalArgumentException {
+        List<ManyPupusasObjectDTO> myListOfObjects;
 
         if (cantidad <= 0 || cantidad > 10) {
             throw new IllegalArgumentException("El cantidad debe ser mayor que 0 y menor que 10");
@@ -72,8 +73,8 @@ public class PupusasController {
         myListOfObjects = iS3ServiceImpl.getManyRandomPupusas(cantidad);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Type","image/jpeg");
+        headers.add("Content-Type","application/json");
         return new ResponseEntity<>(myListOfObjects,headers,HttpStatus.OK);
     }
-
+    
 }

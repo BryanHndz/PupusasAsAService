@@ -121,7 +121,7 @@ public class IS3ServiceImpl implements IS3Service {
 
     }
 
-    public List<byte[]> getManyRandomPupusas(int cantidad) throws IOException {
+    public List<ManyPupusasObjectDTO> getManyRandomPupusas(int cantidad) throws IOException {
         ArrayList<ManyPupusasObjectDTO> pupusasList = new ArrayList<>();
 
         ListObjectsV2Request listObjectsV2Request = ListObjectsV2Request.builder().bucket(bucketName).build();
@@ -159,7 +159,7 @@ public class IS3ServiceImpl implements IS3Service {
             pupusasList.add(objectResponse);
         }
 
-        return new ArrayList<>();
+        return pupusasList;
     }
 
 }
