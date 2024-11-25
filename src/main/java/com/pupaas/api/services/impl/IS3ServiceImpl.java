@@ -199,7 +199,27 @@ public class IS3ServiceImpl implements IS3Service {
     }
 
     public String deletePupusasByKey(String key) throws IOException {
-        
+        if (!listPupusasKeys().contains(key)) {
+            throw new IllegalArgumentException("Key not found: " + key);
+        }
+
+        try {
+            // Construimos la solicitud para eliminar el objeto
+            DeleteObjectRequest deleteRequest = DeleteObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(key)
+                    .build();
+
+            // Ejecutamos la operación de eliminación
+            DeleteObjectResponse response = s3Client.deleteObject(deleteRequest);
+
+
+            return "El objeto con la key '" + key + "' fue eliminado.";
+
+        } catch (Exception e) {
+            System.err.println("Error al intentar eliminar el objeto: " + e.getMessage());
+            throw e; // Relanzar la excepción para manejo superior
+        }
     }
 }
 

@@ -108,7 +108,9 @@ public class PupusasController {
 
     @DeleteMapping("/pupusa/delete")
     public ResponseEntity<String> deletePupusa(@RequestParam("key") String fileKey) throws IOException {
+            String deletingMessage = iS3ServiceImpl.deletePupusasByKey(fileKey);
 
+            return new ResponseEntity<>(deletingMessage,HttpStatus.OK);
     }
 
 }
