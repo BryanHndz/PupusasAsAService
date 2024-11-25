@@ -1,4 +1,5 @@
 package com.pupaas.api.services.impl;
+import com.pupaas.api.domain.dtos.ManyPupusasObjectDTO;
 import com.pupaas.api.domain.dtos.UploadPupusaDTO;
 import com.pupaas.api.domain.dtos.UploadPupusaDTOResponse;
 import com.pupaas.api.exceptions.WrongFileUploadingException;
@@ -38,8 +39,9 @@ public class IS3ServiceImpl implements IS3Service {
     FilenameCreator filenameCreator;
 
     private String bucketName = "bryanhndz-ingsoftware";
-
     private final S3Presigner s3Presigner;
+
+
 
     public IS3ServiceImpl() {
         this.s3Presigner = S3Presigner.builder()
@@ -72,6 +74,7 @@ public class IS3ServiceImpl implements IS3Service {
             String myResponse  = s3Client.putObject(putObjectRequest, RequestBody.fromBytes(image.getBytes())).eTag();
 
             //Generating a presigned url for uploaded image;
+            //PresignedUrlGenerator.purlgenerator(bucketname, duration, )
             GetObjectRequest objectRequest = GetObjectRequest.builder()
                     .bucket(bucketName)
                     .key(filePath)
@@ -86,24 +89,20 @@ public class IS3ServiceImpl implements IS3Service {
 
             return new UploadPupusaDTOResponse("Archivo subido correctamente :D", presignedUrl.toString(), myResponse);
 
-
-
         }catch (Exception e) {
             return new UploadPupusaDTOResponse(e.getMessage(), null, null);
         }
     }
 
     public byte[] getOneRandomPupusa() throws IOException {
-        //Obteniendo la lista de objetos en el bucket:
         ListObjectsV2Request listObjectsV2Request = ListObjectsV2Request.builder()
-                .bucket("bryanhndz-ingsoftware").build();
-
+                .bucket(bucketName).build();
         ListObjectsV2Response listObjectsV2Response = s3Client.listObjectsV2(listObjectsV2Request);
         //Creando la lista de keys de los objetos:
         List<S3Object> objects = listObjectsV2Response.contents();
-
         //Creando un numero random con el limite superior de la lista anterior;
         Random randomNumber = new Random();
+
         S3Object randomObject = objects.get(randomNumber.nextInt(objects.size()));
 
         //Creando request para el objeto y enviándolo al bucket:
@@ -123,7 +122,43 @@ public class IS3ServiceImpl implements IS3Service {
     }
 
     public List<byte[]> getManyRandomPupusas(int cantidad) throws IOException {
-        //Getting presigned URLs for every JSON.
+        ArrayList<ManyPupusasObjectDTO> pupusasList = new ArrayList<>();
+
+        ListObjectsV2Request listObjectsV2Request = ListObjectsV2Request.builder().bucket(bucketName).build();
+        ListObjectsV2Response listObjectsV2Response = s3Client.listObjectsV2(listObjectsV2Request);
+        List<S3Object> objects = listObjectsV2Response.contents();
+
+        Random randomNumber = new Random();
+
+
+        for(int i = 1; i <= cantidad; i++) {
+            S3Object randomObject = objects.get(randomNumber.nextInt(objects.size()));
+            System.out.println(randomObject.key());
+
+            GetObjectRequest objectRequest = GetObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(randomObject.key())
+                    .build();
+
+            GetObjectPresignRequest objectPresignRequest = GetObjectPresignRequest.builder()
+                    .signatureDuration(Duration.ofMinutes(10))
+                    .getObjectRequest(objectRequest)
+                    .build();
+
+            String[] splitKey = randomObject.key().split("/");
+            String masa = splitKey[1];
+            String ingredientes = splitKey[2];
+            URL presignedUrl = s3Presigner.presignGetObject(objectPresignRequest).url();
+
+            ManyPupusasObjectDTO objectResponse = new ManyPupusasObjectDTO();
+
+            objectResponse.setMasa(masa);
+            objectResponse.setIngrediente(ingredientes);
+            objectResponse.setImageUrl(presignedUrl);
+
+            pupusasList.add(objectResponse);
+        }
+
         return new ArrayList<>();
     }
 

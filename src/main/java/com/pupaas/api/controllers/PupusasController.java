@@ -63,18 +63,16 @@ public class PupusasController {
 
     @GetMapping("/pupusa/many")
     public ResponseEntity<List<byte[]>> getManyPupusasImage(@RequestParam("cantidad") int cantidad) throws IOException, IllegalArgumentException {
-        List<byte[]> myListOfObjects = new ArrayList<>();
+        List<byte[]> myListOfObjects;
 
         if (cantidad <= 0 || cantidad > 10) {
             throw new IllegalArgumentException("El cantidad debe ser mayor que 0 y menor que 10");
         }
-        for(int i = 1; i <= cantidad; i++) {
-            byte[] imageBytes = iS3ServiceImpl.getOneRandomPupusa();
-            myListOfObjects.add(imageBytes);
-        }
+
+        myListOfObjects = iS3ServiceImpl.getManyRandomPupusas(cantidad);
+
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type","image/jpeg");
-
         return new ResponseEntity<>(myListOfObjects,headers,HttpStatus.OK);
     }
 
