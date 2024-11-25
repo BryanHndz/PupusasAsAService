@@ -107,7 +107,7 @@ public class IS3ServiceImpl implements IS3Service {
 
         //Creando request para el objeto y enviándolo al bucket:
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
-                .bucket("bryanhndz-ingsoftware")
+                .bucket(bucketName)
                 .key(randomObject.key())
                 .build();
 
@@ -162,6 +162,45 @@ public class IS3ServiceImpl implements IS3Service {
         return pupusasList;
     }
 
+    public byte[] getOneCustomPupusa(int masa, int ingrediente) throws IOException {
+
+        String fileprefix = filenameCreator.createFilename(masa, ingrediente);
+        String bucketname = "bryanhndz-ingsoftware";
+
+        ListObjectsV2Request listObjectsV2Request = ListObjectsV2Request.builder().bucket(bucketname).prefix(fileprefix).build();
+        ListObjectsV2Response listObjectsV2Response = s3Client.listObjectsV2(listObjectsV2Request);
+        List<S3Object> objects = listObjectsV2Response.contents();
+        Random randomNumber = new Random();
+        S3Object randomObject = objects.get(randomNumber.nextInt(objects.size()));
+
+        System.out.println(randomObject.key());
+
+        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                .bucket(bucketname)
+                .key(randomObject.key())
+                .build();
+        try(ResponseInputStream<?> s3Object = s3Client.getObject(getObjectRequest)) {
+            byte[] imageBytes = s3Object.readAllBytes();
+
+            return imageBytes;
+        }
+    }
+
+    public List<String> listPupusasKeys(){
+        ListObjectsV2Request listObjectsV2Request = ListObjectsV2Request.builder()
+                .bucket("bryanhndz-ingsoftware").build();
+        ListObjectsV2Response listObjectsV2Response = s3Client.listObjectsV2(listObjectsV2Request);
+
+        //Creando la lista de keys de los objetos:
+        List<S3Object> objects = listObjectsV2Response.contents();
+        List<String> keys = objects.stream().map(S3Object::key).toList();
+
+        return keys;
+    }
+
+    public String deletePupusasByKey(String key) throws IOException {
+        
+    }
 }
 
 

@@ -3,10 +3,12 @@ package com.pupaas.api.controllers;
 import com.pupaas.api.domain.dtos.ManyPupusasObjectDTO;
 import com.pupaas.api.domain.dtos.UploadPupusaDTO;
 import com.pupaas.api.domain.dtos.UploadPupusaDTOResponse;
+import com.pupaas.api.services.IS3Service;
 import com.pupaas.api.services.impl.IS3ServiceImpl;
 import com.pupaas.api.utils.FilenameCreator;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import org.apache.catalina.connector.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -21,6 +23,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -76,5 +79,36 @@ public class PupusasController {
         headers.add("Content-Type","application/json");
         return new ResponseEntity<>(myListOfObjects,headers,HttpStatus.OK);
     }
-    
+
+    @GetMapping("/pupusa/custom/{masa}/{ingrediente}")
+    public ResponseEntity<byte[]> getOneCustomPupusas(@PathVariable int masa, @PathVariable int ingrediente) throws IOException {
+        if (masa <= 0 || masa > 2) {
+            throw new IllegalArgumentException("Los valores ingresados para la masa deben ser 1 para Arroz y 2 para Maiz");
+        }
+        if (ingrediente <= 0 || ingrediente > 3) {
+            throw new IllegalArgumentException("El valor del ingrediente debe ser 1 para Frijol-queso, 2 para Revueltas y 3 para Queso");
+        }
+
+        byte[] imageBytes = iS3ServiceImpl.getOneCustomPupusa(masa, ingrediente);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type","image/jpeg");
+        return new ResponseEntity<>(imageBytes,headers,HttpStatus.OK);
+
+    }
+
+    @GetMapping("/pupusa/list")
+    public ResponseEntity<List<String>> listAllKeys(){
+        List<String> keys = iS3ServiceImpl.listPupusasKeys();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type","application/json");
+
+        return new ResponseEntity(keys,headers,HttpStatus.OK);
+    }
+
+    @DeleteMapping("/pupusa/delete")
+    public ResponseEntity<String> deletePupusa(@RequestParam("key") String fileKey) throws IOException {
+
+    }
+
 }
