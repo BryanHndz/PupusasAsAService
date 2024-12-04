@@ -5,6 +5,7 @@ import com.pupaas.api.domain.dtos.UploadPupusaDTOResponse;
 import com.pupaas.api.exceptions.WrongFileUploadingException;
 import com.pupaas.api.services.IS3Service;
 import com.pupaas.api.utils.FilenameCreator;
+import com.pupaas.api.utils.ObjectLister;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -37,6 +38,9 @@ public class IS3ServiceImpl implements IS3Service {
 
     @Autowired
     FilenameCreator filenameCreator;
+
+    @Autowired
+    ObjectLister objectLister;
 
     private String bucketName = "bryanhndz-ingsoftware";
     private final S3Presigner s3Presigner;
@@ -95,11 +99,8 @@ public class IS3ServiceImpl implements IS3Service {
     }
 
     public byte[] getOneRandomPupusa() throws IOException {
-        ListObjectsV2Request listObjectsV2Request = ListObjectsV2Request.builder()
-                .bucket(bucketName).build();
-        ListObjectsV2Response listObjectsV2Response = s3Client.listObjectsV2(listObjectsV2Request);
         //Creando la lista de keys de los objetos:
-        List<S3Object> objects = listObjectsV2Response.contents();
+        List<S3Object> objects = objectLister.listObjects(bucketName);
         //Creando un numero random con el limite superior de la lista anterior;
         Random randomNumber = new Random();
 
@@ -124,16 +125,13 @@ public class IS3ServiceImpl implements IS3Service {
     public List<ManyPupusasObjectDTO> getManyRandomPupusas(int cantidad) throws IOException {
         ArrayList<ManyPupusasObjectDTO> pupusasList = new ArrayList<>();
 
-        ListObjectsV2Request listObjectsV2Request = ListObjectsV2Request.builder().bucket(bucketName).build();
-        ListObjectsV2Response listObjectsV2Response = s3Client.listObjectsV2(listObjectsV2Request);
-        List<S3Object> objects = listObjectsV2Response.contents();
+        List<S3Object> objects = objectLister.listObjects(bucketName);
 
         Random randomNumber = new Random();
 
 
-        for(int i = 1; i <= cantidad; i++) {
+        for(int i = 0; i < cantidad; i++) {
             S3Object randomObject = objects.get(randomNumber.nextInt(objects.size()));
-            System.out.println(randomObject.key());
 
             GetObjectRequest objectRequest = GetObjectRequest.builder()
                     .bucket(bucketName)
@@ -167,9 +165,7 @@ public class IS3ServiceImpl implements IS3Service {
         String fileprefix = filenameCreator.createFilename(masa, ingrediente);
         String bucketname = "bryanhndz-ingsoftware";
 
-        ListObjectsV2Request listObjectsV2Request = ListObjectsV2Request.builder().bucket(bucketname).prefix(fileprefix).build();
-        ListObjectsV2Response listObjectsV2Response = s3Client.listObjectsV2(listObjectsV2Request);
-        List<S3Object> objects = listObjectsV2Response.contents();
+        List<S3Object> objects = objectLister.listObjects(bucketName);
         Random randomNumber = new Random();
         S3Object randomObject = objects.get(randomNumber.nextInt(objects.size()));
 
@@ -187,12 +183,8 @@ public class IS3ServiceImpl implements IS3Service {
     }
 
     public List<String> listPupusasKeys(){
-        ListObjectsV2Request listObjectsV2Request = ListObjectsV2Request.builder()
-                .bucket("bryanhndz-ingsoftware").build();
-        ListObjectsV2Response listObjectsV2Response = s3Client.listObjectsV2(listObjectsV2Request);
-
         //Creando la lista de keys de los objetos:
-        List<S3Object> objects = listObjectsV2Response.contents();
+        List<S3Object> objects = objectLister.listObjects(bucketName);
         List<String> keys = objects.stream().map(S3Object::key).toList();
 
         return keys;

@@ -3,27 +3,20 @@ package com.pupaas.api.controllers;
 import com.pupaas.api.domain.dtos.ManyPupusasObjectDTO;
 import com.pupaas.api.domain.dtos.UploadPupusaDTO;
 import com.pupaas.api.domain.dtos.UploadPupusaDTOResponse;
-import com.pupaas.api.services.IS3Service;
 import com.pupaas.api.services.impl.IS3ServiceImpl;
 import com.pupaas.api.utils.FilenameCreator;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-import org.apache.catalina.connector.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
-import java.util.stream.Collectors;
 
 
 @RestController
@@ -43,7 +36,7 @@ public class PupusasController {
         return "Welcome to our new Pupusas As A Service API";
     }
 
-    @PostMapping(value = "/upload", consumes = { "multipart/form-data" })
+    @PostMapping(value = "/pupusas", consumes = { "multipart/form-data" })
     public ResponseEntity<UploadPupusaDTOResponse> uploadPupusas(@Valid @RequestPart("dtoPupusa") UploadPupusaDTO dtoPupusa,@NotNull @RequestPart("file") MultipartFile image) throws IOException {
 
             UploadPupusaDTOResponse response = iS3ServiceImpl.uploadFile(dtoPupusa, image);
@@ -54,7 +47,7 @@ public class PupusasController {
 
     //Crear controlador tipo GET para recibir entre 1 y 10 imagenes random de pupusas
     //Si no se envian parametros al controlador, por defecto sera una sola imagen de masa random e ingredientes random
-    @GetMapping("/pupusa")
+    @GetMapping("/pupusas/random")
     public ResponseEntity<byte[]> getOnePupusasImage() throws IOException {
 
             byte[] imageBytes = iS3ServiceImpl.getOneRandomPupusa();
@@ -65,7 +58,7 @@ public class PupusasController {
             return new ResponseEntity<>(imageBytes,headers,HttpStatus.OK);
     }
 
-    @GetMapping("/pupusa/many")
+    @GetMapping("/pupusas")
     public ResponseEntity<List<ManyPupusasObjectDTO>> getManyPupusasImage(@RequestParam("cantidad") int cantidad) throws IOException, IllegalArgumentException {
         List<ManyPupusasObjectDTO> myListOfObjects;
 
@@ -80,7 +73,7 @@ public class PupusasController {
         return new ResponseEntity<>(myListOfObjects,headers,HttpStatus.OK);
     }
 
-    @GetMapping("/pupusa/custom/{masa}/{ingrediente}")
+    @GetMapping("/pupusas/{masa}/{ingrediente}")
     public ResponseEntity<byte[]> getOneCustomPupusas(@PathVariable int masa, @PathVariable int ingrediente) throws IOException {
         if (masa <= 0 || masa > 2) {
             throw new IllegalArgumentException("Los valores ingresados para la masa deben ser 1 para Arroz y 2 para Maiz");
@@ -96,7 +89,7 @@ public class PupusasController {
 
     }
 
-    @GetMapping("/pupusa/list")
+    @GetMapping("/pupusas/all")
     public ResponseEntity<List<String>> listAllKeys(){
         List<String> keys = iS3ServiceImpl.listPupusasKeys();
 
@@ -106,7 +99,7 @@ public class PupusasController {
         return new ResponseEntity(keys,headers,HttpStatus.OK);
     }
 
-    @DeleteMapping("/pupusa/delete")
+    @DeleteMapping("/pupusas")
     public ResponseEntity<String> deletePupusa(@RequestParam("key") String fileKey) throws IOException {
             String deletingMessage = iS3ServiceImpl.deletePupusasByKey(fileKey);
 
